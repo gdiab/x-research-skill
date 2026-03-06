@@ -9,7 +9,13 @@ description: >
   "X search", "Twitter search", "tweets about", "what's the discourse on", "what are
   people saying about", or wants to find takes/opinions/threads on any subject —
   even if they don't explicitly say "X" or "Twitter". If the task involves pulling
-  signal from public social conversation, this is the skill to use.
+  signal from public social conversation, this is the skill to use. Do NOT use for
+  general web searches, non-X social platforms, or private/DM content.
+compatibility: >
+  Requires network access and Node.js with npx/tsx. Uses the X API v2 (Basic tier).
+metadata:
+  author: gdiab
+  version: 1.1.0
 ---
 
 # X Research Skill
