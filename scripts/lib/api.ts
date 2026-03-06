@@ -58,21 +58,27 @@ export class XApiClient {
   }
 
   private loadToken(envFilePath: string): string {
+    // Check environment variable first — fastest path and works in any CI/agent env
+    if (process.env.X_BEARER_TOKEN) {
+      return process.env.X_BEARER_TOKEN.trim();
+    }
+
+    // Fall back to reading the env file
     try {
       const content = fs.readFileSync(envFilePath, "utf-8");
       const match = content.match(/X_BEARER_TOKEN=(.+)/);
       if (!match) {
         throw new Error(
           `X_BEARER_TOKEN not found in ${envFilePath}. ` +
-          `Add it like: X_BEARER_TOKEN=your_token_here`
+          `Set the X_BEARER_TOKEN environment variable or add it to ${envFilePath} like: X_BEARER_TOKEN=your_token_here`
         );
       }
       return match[1].trim();
     } catch (err: any) {
       if (err.code === "ENOENT") {
         throw new Error(
-          `X API token file not found at ${envFilePath}. ` +
-          `Create it with: echo "X_BEARER_TOKEN=your_token" > ${envFilePath}`
+          `X API token not configured. Set the X_BEARER_TOKEN environment variable, ` +
+          `or create ${envFilePath} with: echo "X_BEARER_TOKEN=your_token" > ${envFilePath}`
         );
       }
       throw err;
@@ -104,7 +110,7 @@ export class XApiClient {
         }
 
         if (response.statusCode === 401) {
-          throw new Error("Invalid X API Bearer Token. Check your token in ~/.openclaw/workspace/.env.x-api");
+          throw new Error("Invalid X API Bearer Token. Check your X_BEARER_TOKEN environment variable or token file.");
         }
 
         if (response.statusCode !== 200) {
