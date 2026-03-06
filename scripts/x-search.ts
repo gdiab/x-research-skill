@@ -19,11 +19,17 @@ import { XApiClient } from "./lib/api.js";
 import { CacheManager } from "./lib/cache.js";
 import { formatOutput } from "./lib/format.js";
 import { mockSearchTweets, mockGetThread, mockGetUserTimeline } from "./lib/mock.js";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const SKILL_DIR = join(__dirname, ".."); // scripts/ -> x-research/
 
 const PATHS = {
-  envFile: `${process.env.HOME}/.openclaw/workspace/.env.x-api`,
-  config: `${process.env.HOME}/.openclaw/workspace/skills/x-api/config.json`,
-  cacheDir: `${process.env.HOME}/.openclaw/workspace/memory/x-cache`,
+  envFile: process.env.X_ENV_FILE || join(SKILL_DIR, ".env.x-api"),
+  config: process.env.X_CONFIG_FILE || join(SKILL_DIR, "config.json"),
+  cacheDir: process.env.X_CACHE_DIR || join(process.env.HOME || "~", ".x-research-cache"),
 };
 
 function parseArgs(args: string[]): {
