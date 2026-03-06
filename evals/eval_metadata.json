@@ -1,0 +1,12 @@
+{
+  "eval_id": 1,
+  "eval_name": "topic-research-ai-agents",
+  "prompt": "I'm writing a post about whether AI agents will replace junior developers. Find me the strongest supporting and opposing viewpoints on X. Use --dry-run since we're testing.",
+  "assertions": [
+    "The skill decomposes the question into multiple search queries (at least 2 different angles)",
+    "Results include both supporting AND opposing viewpoints",
+    "Output is structured JSON with tweet data including engagement metrics",
+    "Each finding includes a tweet URL",
+    "The skill uses the x-search.ts CLI tool with --dry-run flag"
+  ]
+}
