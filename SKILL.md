@@ -129,6 +129,16 @@ Prioritize thread expansion for:
 Don't expand every thread — that would be wasteful on API calls. Use judgment about which
 threads are worth the extra fetch.
 
+**Thread retrieval details:** The `thread` command first tries `search/recent` (covers
+the last 7 days). If the thread is older, it automatically falls back to the author's
+timeline and filters by `conversation_id`. The response includes metadata:
+- `source`: `"search"` or `"timeline_fallback"` — how the thread was retrieved
+- `complete`: `true` if via search (comprehensive), `false` if via timeline fallback
+  (may be incomplete since the timeline only returns the author's most recent tweets)
+
+When `complete` is `false`, note this in your output so the user knows the thread may
+be partial.
+
 ### 4. Filter, rank, and classify results
 
 Raw search results contain noise. After gathering tweets:

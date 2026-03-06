@@ -276,7 +276,7 @@ export class XApiClient {
 
     const conversationId = rootData.data.conversation_id || tweetId;
 
-    // Search for all tweets in this conversation
+    // Search for all tweets in this conversation (covers last 7 days)
     const threadQuery = `conversation_id:${conversationId}`;
     const threadResults = await this.searchTweets(threadQuery, {
       maxResults: 100,
@@ -284,14 +284,64 @@ export class XApiClient {
       excludeRetweets: false,
     });
 
+    let tweets = threadResults.tweets;
+    let source: "search" | "timeline_fallback" = "search";
+    let complete = true;
+
+    // Fallback: if search returned nothing (thread older than 7 days),
+    // try the author's timeline and filter by conversation_id
+    if (tweets.length === 0) {
+      const authorId = rootData.data.author_id;
+      const timelineTweets = await this.getUserTimelineById(authorId, 100);
+      tweets = timelineTweets.filter((t) => t.conversation_id === conversationId);
+      source = "timeline_fallback";
+      complete = false; // timeline may not contain the full thread
+    }
+
     return {
       root_tweet_id: tweetId,
       conversation_id: conversationId,
-      tweets: threadResults.tweets.sort(
+      tweets: tweets.sort(
         (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       ),
+      source,
+      complete,
       fetched_at: new Date().toISOString(),
     };
+  }
+
+  private async getUserTimelineById(userId: string, maxResults = 100): Promise<Tweet[]> {
+    const timelineUrl = `${API_BASE}/users/${userId}/tweets?max_results=${Math.min(maxResults, 100)}&tweet.fields=id,text,created_at,public_metrics,conversation_id,referenced_tweets&expansions=author_id&user.fields=username,name,public_metrics`;
+    const timelineData = await this.request(timelineUrl);
+
+    const users = new Map<string, any>();
+    if (timelineData.includes?.users) {
+      for (const user of timelineData.includes.users) {
+        users.set(user.id, user);
+      }
+    }
+
+    return (timelineData.data || []).map((t: any) => {
+      const author = users.get(t.author_id);
+      return {
+        id: t.id,
+        text: t.text,
+        author_id: t.author_id,
+        author_username: author?.username,
+        author_name: author?.name,
+        author_followers: author?.public_metrics?.followers_count,
+        created_at: t.created_at,
+        url: author ? `https://x.com/${author.username}/status/${t.id}` : undefined,
+        engagement: {
+          likes: t.public_metrics?.like_count || 0,
+          retweets: t.public_metrics?.retweet_count || 0,
+          replies: t.public_metrics?.reply_count || 0,
+          quotes: t.public_metrics?.quote_count || 0,
+        },
+        conversation_id: t.conversation_id,
+        referenced_tweets: t.referenced_tweets,
+      };
+    });
   }
 
   async getUserTimeline(username: string, maxResults = 20): Promise<any> {

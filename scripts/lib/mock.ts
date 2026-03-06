@@ -131,6 +131,8 @@ export function mockGetThread(tweetId: string): any {
     root_tweet_id: tweetId,
     conversation_id: `mock_thread_${tweetId}_0`,
     tweets,
+    source: "search" as const,
+    complete: true,
     fetched_at: new Date().toISOString(),
     _mock: true,
   };

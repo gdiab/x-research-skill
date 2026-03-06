@@ -139,6 +139,7 @@ The CLI auto-creates config/cache directories as needed.
 - **401 Unauthorized**: token is invalid or revoked.
 - **429 rate limit**: CLI includes retry/backoff; wait and retry.
 - **Noisy results**: tighten query with operators (see `references/x-api.md`).
+- **Old threads returning empty**: threads older than 7 days fall outside the `search/recent` window. The CLI automatically falls back to the author's timeline. Check the `source` and `complete` fields in the response — `"timeline_fallback"` with `complete: false` means the thread may be partial.
 
 ## Notes
 
