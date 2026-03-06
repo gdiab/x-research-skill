@@ -166,7 +166,7 @@ export class XApiClient {
 
     const params = new URLSearchParams({
       query: fullQuery,
-      max_results: String(Math.min(maxResults, 100)), // API max is 100 per page
+      max_results: String(Math.min(Math.max(maxResults, 10), 100)), // API requires 10–100
       sort_order: sortOrder,
       "tweet.fields": "id,text,author_id,created_at,public_metrics,conversation_id,referenced_tweets",
       expansions: "author_id",
