@@ -15,7 +15,7 @@ const MIN_REQUEST_INTERVAL = 350;
 
 interface SearchOptions {
   maxResults?: number;
-  sortOrder?: "relevance" | "recency";
+  sortOrder?: "relevancy" | "recency";
   excludeRetweets?: boolean;
   startTime?: string; // ISO 8601
   endTime?: string; // ISO 8601
@@ -152,7 +152,7 @@ export class XApiClient {
   async searchTweets(query: string, options: SearchOptions = {}): Promise<SearchResult> {
     const {
       maxResults = 50,
-      sortOrder = "relevance",
+      sortOrder = "relevancy",
       excludeRetweets = true,
       startTime,
       endTime,

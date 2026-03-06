@@ -50,7 +50,7 @@ npx tsx scripts/x-search.ts <command> ...
 ### Search
 
 ```bash
-npx tsx scripts/x-search.ts search "your query" --max-results 50 --sort relevance
+npx tsx scripts/x-search.ts search "your query" --max-results 50 --sort relevancy
 ```
 
 ### Read a specific tweet or thread from URL/ID

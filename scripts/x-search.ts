@@ -4,7 +4,7 @@
  * X Research CLI — Thoth's X/Twitter search interface
  *
  * Usage:
- *   npx tsx x-search.ts search "query" [--max-results N] [--sort relevance|recency] [--dry-run]
+ *   npx tsx x-search.ts search "query" [--max-results N] [--sort relevancy|recency] [--dry-run]
  *   npx tsx x-search.ts thread <tweet-id> [--dry-run]
  *   npx tsx x-search.ts timeline <username> [--max-results N] [--dry-run]
  *   npx tsx x-search.ts watchlist [--dry-run]
@@ -61,7 +61,7 @@ function loadConfig(): any {
     watchlist: [],
     default_search_params: {
       max_results: 50,
-      sort: "relevance",
+      sort: "relevancy",
       lang: "en",
       exclude_retweets: true,
     },
@@ -102,7 +102,7 @@ async function main() {
   switch (command) {
     case "search": {
       if (!positional) {
-        console.error("Usage: x-search.ts search \"query\" [--max-results N] [--sort relevance|recency] [--dry-run]");
+        console.error("Usage: x-search.ts search \"query\" [--max-results N] [--sort relevancy|recency] [--dry-run]");
         process.exit(1);
       }
 
@@ -125,7 +125,7 @@ async function main() {
 
       const results = await client!.searchTweets(positional, {
         maxResults,
-        sortOrder: sort as "relevance" | "recency",
+        sortOrder: sort as "relevancy" | "recency",
         excludeRetweets: config.default_search_params.exclude_retweets,
       });
 
@@ -336,7 +336,7 @@ async function main() {
 X Research CLI — Thoth's X/Twitter search interface
 
 Commands:
-  search "query" [--max-results N] [--sort relevance|recency] [--dry-run]
+  search "query" [--max-results N] [--sort relevancy|recency] [--dry-run]
       Search tweets matching a query
 
   read <url-or-tweet-id> [--dry-run]

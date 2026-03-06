@@ -256,7 +256,7 @@ The config file structure:
   ],
   "default_search_params": {
     "max_results": 50,
-    "sort": "relevance",
+    "sort": "relevancy",
     "lang": "en",
     "exclude_retweets": true
   }
