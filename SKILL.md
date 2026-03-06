@@ -12,13 +12,17 @@ description: >
   signal from public social conversation, this is the skill to use. Do NOT use for
   general web searches, non-X social platforms, or private/DM content.
 compatibility: >
-  Requires network access and Node.js with npx/tsx. Uses the X API v2 (Basic tier).
-metadata:
-  author: gdiab
-  version: 1.1.0
+  Requires Node.js 18+ with npx/tsx and outbound HTTPS access to api.x.com. Uses the X API v2 (Basic tier).
+metadata: {"author":"gdiab","version":"1.2.0","openclaw":{"requires":{"bins":["node"],"env":["X_BEARER_TOKEN"]}}}
 ---
 
 # X Research Skill
+
+## Platform Compatibility
+
+- **OpenClaw**: Full support. Set `X_BEARER_TOKEN` env var or place `.env.x-api` in the skill directory.
+- **Codex (OpenAI)**: Works. Add `api.x.com` to the environment's domain allowlist. Set `X_BEARER_TOKEN` via environment secrets.
+- **Claude Cowork**: Currently blocked. Cowork's MITM proxy blocks custom domain egress regardless of admin allowlist settings (anthropics/claude-code#23818, #30112). Will work once Anthropic fixes their proxy.
 
 You are an X/Twitter research module. Your job is to help the user gather signal
 from public discourse on X — finding relevant tweets, threads, and accounts on any topic.
@@ -37,11 +41,11 @@ The skill has three components:
 
 | What | Where |
 |------|-------|
-| API token | `~/.openclaw/workspace/.env.x-api` (contains `X_BEARER_TOKEN=...`) |
-| Config | `~/.openclaw/workspace/skills/x-api/config.json` |
-| Search cache | `~/.openclaw/workspace/memory/x-cache/search/` |
-| Thread cache | `~/.openclaw/workspace/memory/x-cache/threads/` |
-| User cache | `~/.openclaw/workspace/memory/x-cache/users/` |
+| API token | `X_BEARER_TOKEN` env var (preferred), or `.env.x-api` in skill dir (override via `X_ENV_FILE`) |
+| Config | `{baseDir}/config.json` (override via `X_CONFIG_FILE`) |
+| Search cache | `~/.x-research-cache/search/` (override via `X_CACHE_DIR`) |
+| Thread cache | `~/.x-research-cache/threads/` |
+| User cache | `~/.x-research-cache/users/` |
 
 ## Research Methodology
 
@@ -89,28 +93,28 @@ caching, pagination, and rate limiting automatically.
 
 ```bash
 # Basic search
-npx tsx <skill-path>/scripts/x-search.ts search "your query here"
+npx tsx {baseDir}/scripts/x-search.ts search "your query here"
 
 # Search with options
-npx tsx <skill-path>/scripts/x-search.ts search "query" --max-results 50 --sort recency
+npx tsx {baseDir}/scripts/x-search.ts search "query" --max-results 50 --sort recency
 
 # Read a specific tweet or thread from a URL
-npx tsx <skill-path>/scripts/x-search.ts read "https://x.com/user/status/123456"
+npx tsx {baseDir}/scripts/x-search.ts read "https://x.com/user/status/123456"
 
 # Also works with just a tweet ID
-npx tsx <skill-path>/scripts/x-search.ts read 123456
+npx tsx {baseDir}/scripts/x-search.ts read 123456
 
 # Get a specific thread by conversation ID
-npx tsx <skill-path>/scripts/x-search.ts thread <tweet-id>
+npx tsx {baseDir}/scripts/x-search.ts thread <tweet-id>
 
 # Check watchlist
-npx tsx <skill-path>/scripts/x-search.ts watchlist
+npx tsx {baseDir}/scripts/x-search.ts watchlist
 
 # Add to watchlist
-npx tsx <skill-path>/scripts/x-search.ts watchlist-add <username> --reason "why monitoring"
+npx tsx {baseDir}/scripts/x-search.ts watchlist-add <username> --reason "why monitoring"
 
 # Get user timeline
-npx tsx <skill-path>/scripts/x-search.ts timeline <username> --max-results 20
+npx tsx {baseDir}/scripts/x-search.ts timeline <username> --max-results 20
 ```
 
 The `read` command is the easiest way to fetch a specific post the user shares. It accepts
@@ -302,7 +306,7 @@ or clearly incomplete as standalone tweets).
 ## Error Handling
 
 If the API token is missing or invalid, tell the user clearly:
-"Your X API token isn't configured. Add your Bearer Token to `~/.openclaw/workspace/.env.x-api` like this: `X_BEARER_TOKEN=your_token_here`"
+"Your X API token isn't configured. Set the `X_BEARER_TOKEN` environment variable, or add your Bearer Token to `.env.x-api` in the skill directory like: `X_BEARER_TOKEN=your_token_here`"
 
 If rate-limited, wait and retry with exponential backoff (the script handles this
 automatically, but let the user know if searches are slow because of throttling).
