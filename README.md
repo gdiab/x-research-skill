@@ -15,6 +15,14 @@ This repository contains:
 - **Users** who want quick, repeatable X/Twitter research from the terminal.
 - **Agents** that need structured social-signal data (JSON) they can summarize, rank, and cite.
 
+## Platform Compatibility
+
+| Platform | Status | Notes |
+|----------|--------|-------|
+| **OpenClaw** | ✅ Full support | Set `X_BEARER_TOKEN` env var or place `.env.x-api` in skill directory |
+| **Codex (OpenAI)** | ✅ Works | Add `api.x.com` to domain allowlist. Set `X_BEARER_TOKEN` via environment secrets |
+| **Claude Cowork** | ❌ Currently blocked | Cowork's MITM proxy blocks custom domain egress regardless of admin allowlist ([#23818](https://github.com/anthropics/claude-code/issues/23818), [#30112](https://github.com/anthropics/claude-code/issues/30112)). Will work once Anthropic fixes their proxy |
+
 ## Quick start
 
 ### 1) Run in dry-run mode (no API token required)
@@ -27,17 +35,31 @@ Dry-run uses mock data from `scripts/lib/mock.ts` so you can test end-to-end beh
 
 ### 2) Configure live X API access
 
-Create:
-
-`~/.openclaw/workspace/.env.x-api`
-
-With:
+**Option A — environment variable (recommended, works everywhere):**
 
 ```bash
-X_BEARER_TOKEN=your_token_here
+export X_BEARER_TOKEN=your_token_here
+npx tsx scripts/x-search.ts search "query"
 ```
 
-The CLI reads this token for live API calls.
+**Option B — env file in skill directory (OpenClaw default):**
+
+Create `.env.x-api` in the skill directory:
+
+```bash
+echo "X_BEARER_TOKEN=your_token_here" > .env.x-api
+```
+
+The CLI checks `X_BEARER_TOKEN` env var first, then falls back to the file.
+
+### Environment variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `X_BEARER_TOKEN` | *(required)* | X API v2 Bearer Token — checked before any file |
+| `X_ENV_FILE` | `{skill-dir}/.env.x-api` | Override path to the token env file |
+| `X_CONFIG_FILE` | `{skill-dir}/config.json` | Override path to the config/watchlist file |
+| `X_CACHE_DIR` | `~/.x-research-cache` | Override path to the local cache directory |
 
 ## CLI commands
 
@@ -107,9 +129,9 @@ If you are wiring this into an agent workflow:
 
 The CLI auto-creates config/cache directories as needed.
 
-- Token file: `~/.openclaw/workspace/.env.x-api`
-- Config: `~/.openclaw/workspace/skills/x-api/config.json`
-- Cache base: `~/.openclaw/workspace/memory/x-cache/`
+- Token: `X_BEARER_TOKEN` env var (preferred), or `.env.x-api` in skill directory (override with `X_ENV_FILE`)
+- Config: `{skill-dir}/config.json` (override with `X_CONFIG_FILE`)
+- Cache base: `~/.x-research-cache/` (override with `X_CACHE_DIR`)
   - Search cache: `search/` (24h TTL)
   - Thread cache: `threads/` (24h TTL)
   - User cache: `users/` (1h TTL)
@@ -135,7 +157,7 @@ The CLI auto-creates config/cache directories as needed.
 
 ## Troubleshooting
 
-- **Missing token**: create `~/.openclaw/workspace/.env.x-api` with `X_BEARER_TOKEN=...`.
+- **Missing token**: set `X_BEARER_TOKEN` env var, or create `.env.x-api` in the skill directory with `X_BEARER_TOKEN=...`.
 - **401 Unauthorized**: token is invalid or revoked.
 - **429 rate limit**: CLI includes retry/backoff; wait and retry.
 - **Noisy results**: tighten query with operators (see `references/x-api.md`).
