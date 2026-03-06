@@ -3,3 +3,4 @@ dist/
 *.js
 !scripts/**/*.ts
 .DS_Store
+.env.x-api
